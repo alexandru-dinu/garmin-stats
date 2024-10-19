@@ -1,4 +1,3 @@
-import io
 import os
 from getpass import getpass
 
@@ -23,17 +22,16 @@ class Client:
             self.client.login(username, password, prompt_mfa=None)
             self.client.dump(SESS_DIR)
 
-    def get_activites(self, start: int, limit: int) -> list[dict]:
+    def get_activities(self, start: int, limit: int) -> list[dict]:
         return self.client.connectapi(
             "/activitylist-service/activities/search/activities",
             params={"start": start, "limit": limit},
         )
 
-    def get_activity(self, activity_id: str, format: str = "csv") -> pd.DataFrame:
-        assert format in ["csv", "gpx"]
+    def get_activity(self, activity_id: str, format: str) -> bytes:
+        assert format in ["csv", "gpx", "tcx"]
         url = f"/download-service/export/{format}/activity/{activity_id}"
-        raw = self.client.download(url)
-        return pd.read_csv(io.BytesIO(raw))
+        return self.client.download(url)
 
 
 def main():
