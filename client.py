@@ -1,3 +1,4 @@
+import io
 import os
 from getpass import getpass
 
@@ -29,9 +30,17 @@ class Client:
         )
 
     def get_activity(self, activity_id: str, format: str) -> bytes:
+        """
+        Get more info about an `activity_id`. Format can be one of `csv, gpx, tcx`.
+        """
+
         assert format in ["csv", "gpx", "tcx"]
         url = f"/download-service/export/{format}/activity/{activity_id}"
         return self.client.download(url)
+
+    @staticmethod
+    def csv_bytes_to_pandas(bytez: bytes) -> pd.DataFrame:
+        return pd.read_csv(io.BytesIO(bytez))
 
 
 def main():
