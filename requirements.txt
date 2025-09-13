@@ -1,6 +1,0 @@
-garth==0.4.46
-pandas>=2.0.0
-loguru
-tqdm
-seaborn
-matplotlib
