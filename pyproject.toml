@@ -6,9 +6,18 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "garth>=0.5.17",
+    "ipywidgets>=8.1.7",
+    "jupyterlab>=4.4.7",
     "loguru>=0.7.3",
     "matplotlib>=3.10.6",
     "pandas>=2.0.0",
     "seaborn>=0.13.2",
     "tqdm>=4.67.1",
+]
+
+[dependency-groups]
+dev = [
+    "autoflake>=2.3.1",
+    "black>=25.1.0",
+    "isort>=6.0.1",
 ]
