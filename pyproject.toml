@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "dash>=3.2.0",
     "garth>=0.5.17",
+    "gpxpy>=1.6.2",
     "ipywidgets>=8.1.7",
     "jupyterlab>=4.4.7",
     "loguru>=0.7.3",
@@ -23,3 +24,21 @@ line-length = 120
 [tool.isort]
 profile = "black"
 line_length = 120
+
+[tool.ruff]
+line-length = 120
+lint.select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "C",   # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "PD",  # pandas-vet
+    "NPY", # NumPy-specific rules
+]
+lint.ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
