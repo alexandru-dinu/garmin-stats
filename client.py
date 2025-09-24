@@ -3,6 +3,7 @@ import os
 from getpass import getpass
 
 import garth
+import gpxpy
 import pandas as pd
 from loguru import logger
 
@@ -33,10 +34,17 @@ class Client:
         """
         Get more info about an `activity_id`. Format can be one of `csv, gpx, tcx`.
         """
-
         assert format in ["csv", "gpx", "tcx"]
         url = f"/download-service/export/{format}/activity/{activity_id}"
         return self.client.download(url)
+
+    def get_hr(self, activity_id: str) -> list[int]:
+        gpx = gpxpy.parse(self.get_activity(activity_id, format="gpx").decode())
+        assert len(gpx.tracks) == 1
+        assert len(gpx.tracks[0].segments) == 1
+        return [
+            int(pt.extensions[0].find(".//{*}hr").text) for pt in gpx.tracks[0].segments[0].points
+        ]
 
     @staticmethod
     def csv_bytes_to_pandas(bytez: bytes) -> pd.DataFrame:
