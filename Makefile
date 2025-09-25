@@ -1,12 +1,12 @@
-SRC := dashboard.py client.py
+SRC := $(shell ls *.py)
 
 run-dashboard: dashboard.py
 	@uv run $^
 
 lint:
-	@uv tool run ruff check $(SRC)
+	@ruff check $(SRC)
 
 format:
-	@uv tool run autoflake --in-place --remove-all-unused-imports $(SRC) \
-		&& uv tool run isort $(SRC) \
-		&& uv tool run black --line-length 100 $(SRC)
+	@autoflake --in-place --remove-all-unused-imports $(SRC) \
+		&& isort $(SRC) \
+		&& black --line-length 100 $(SRC)
