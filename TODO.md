@@ -1,9 +1,15 @@
-- [ ] finest level of detail possible: gpx
-- [ ] HR scatter plot
-- [ ] pace zones vs hr (across multiple runs)
+# Implementation
+- [ ] get finest level of detail possible, like gpx
 - [ ] get and cache data (make sure no repeated API calls are made)
-- [ ] marker style per activity type
 - [ ] inputs for filtering (exposing `df.query`?)
-- [ ] stats per (week, month, day)
+
+# Viz
+- [x] marker style per activity type
+- [x] HR plot
 - [x] clicked activity to display more info
+- [ ] pace zones vs hr (across multiple runs)
+- [ ] pie chart for activities in a time window
+- [ ] aggregations per time window
+
+# References
 - [ ] https://github.com/sivaprakasaman/garmin_wrapped/
