@@ -12,4 +12,5 @@
 - [ ] aggregations per time window
 
 # References
-- [ ] https://github.com/sivaprakasaman/garmin_wrapped/
+- https://github.com/cyberjunky/python-garminconnect
+- https://github.com/sivaprakasaman/garmin_wrapped

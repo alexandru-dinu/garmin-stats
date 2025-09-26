@@ -1,6 +1,6 @@
-SRC := $(shell ls *.py)
+SRC := $(shell ls src/*.py)
 
-run-dashboard: dashboard.py
+run-dashboard: src/dashboard.py
 	@uv run $^
 
 lint:
