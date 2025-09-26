@@ -2,96 +2,84 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from dash import Dash, Input, Output, dash_table, dcc, html
+from loguru import logger
 
 from client import Client
 
-g = Client()
-res = pd.DataFrame(g.get_activities(start=0, limit=1000))
-mask = res["activityType"].apply(lambda d: "running" in d["typeKey"])
-
-run = res.loc[mask]
-
 # TODO: separate data from presentation
-df = run[["activityId", "startTimeLocal", "distance", "elapsedDuration"]].reset_index(drop=True)
+g = Client()
+df = pd.DataFrame(g.get_activities(start=0, limit=1000)).set_index("activityId")
+df["activityId"] = df.index
+logger.info(f"{df.shape=}")
+
+df = df[
+    ["activityId", "activityType", "activityName", "startTimeLocal", "distance", "elapsedDuration"]
+]
+df["activityType"] = df["activityType"].apply(lambda d: d["typeKey"])
 df["distance_km"] = (df["distance"] / 1000).round(2)
 df["duration_min"] = (df["elapsedDuration"] / 60).round(2)
-df["pace"] = (df["duration_min"] / df["distance_km"]).round(2)
-df["pace_str"] = df["pace"].apply(lambda x: f"{int(x)}:{round(60 * (x % 1)):02d} min/km")
 df = df.drop(["distance", "elapsedDuration"], axis=1)
 
-TEXT_STYLE = {"font-family": "sans-serif", "font-size": "14px"}
+
+TEXT_STYLE = {"font-family": "sans-serif", "font-size": "14pt"}
+ERR_TEXT_STYLE = TEXT_STYLE | {"color": "red", "font-weight": "bold"}
 
 app = Dash(__name__)
+
+
+def plot_activities():
+    fig = px.scatter(
+        df,
+        x="startTimeLocal",
+        y="duration_min",
+        color="activityType",
+        symbol="activityType",
+        custom_data=["activityId"],
+        title="Activities",
+    )
+    fig.update_traces(
+        marker={"size": 10, "line": {"width": 1, "color": "Black"}},
+        selector={"mode": "markers"},
+    )
+    return fig
+
 
 # TODO: smarter layout
 app.layout = html.Div(
     [
-        # Inputs
-        html.Label("Number of activities: ", style=TEXT_STYLE),
-        dcc.Input(
-            id="n_selector",
-            type="number",
-            debounce=True,
-            value=100,
-        ),
-        html.Label("Min distance: ", style=TEXT_STYLE),
-        dcc.Input(id="n_min_distance", type="number", debounce=True, value=0),
-        html.Div(id="err_msg", style=TEXT_STYLE | {"color": "red", "font-weight": "bold"}),
         # Main activities
-        dcc.Graph(id="plot_running"),
+        dcc.Graph(id="plot_activities", figure=plot_activities()),
         # Activity info
         html.Div(id="activity_info", style=TEXT_STYLE),
-        dcc.Graph(id="hr_info"),
+        dcc.Loading(
+            id="hr_loading",
+            type="circle",
+            style={"marginTop": "40px"},
+            children=html.Div(id="hr_info"),
+        ),
     ]
 )
 
 
 @app.callback(
-    [Output("plot_running", "figure"), Output("err_msg", "children")],
-    [Input("n_selector", "value"), Input("n_min_distance", "value")],
-)
-def _(n, md):
-    n = int(n)
-    msg = "" if n <= len(df) else f"Too many activities! (max = {len(df)})"
-    fig = px.scatter(
-        df.head(n).query(f"distance_km >= {md}"),
-        x="startTimeLocal",
-        y="duration_min",
-        size="distance_km",
-        color="pace",
-        color_continuous_scale=px.colors.sequential.Turbo_r,
-        custom_data=["pace_str", "distance_km"],
-        title="Distance and Duration",
-    )
-    fig.update_traces(
-        hovertemplate="Distance: %{customdata[1]}<br>Pace: %{customdata[0]}<br>Time: %{x}"
-    )
-    fig.update_traces(
-        marker={"symbol": "circle", "line": {"width": 2, "color": "Black"}},
-        selector={"mode": "markers"},
-    )
-    return fig, msg
-
-
-@app.callback(
     Output("activity_info", "children"),
-    Input("plot_running", "clickData"),
+    Input("plot_activities", "clickData"),
 )
 def _(clickData):
     if not clickData:
-        return "Click a point"
+        return "Select an activity to see detailed info..."
 
-    idx = clickData["points"][0]["pointIndex"]
-    pt = df.iloc[[idx]]
+    activity_id = clickData["points"][0]["customdata"][0]
+    pt = df.loc[[activity_id]]
 
-    link = f'https://connect.garmin.com/modern/activity/{pt["activityId"].iloc[0]}'
+    link = f"https://connect.garmin.com/modern/activity/{activity_id}"
 
     return html.Div(
         [
             dash_table.DataTable(
-                data=pt.to_dict("records"),
+                data=pt.to_dict(orient="records"),
                 columns=[{"name": c, "id": c} for c in pt.columns],
-                style_table={"overflowX": "auto", "margin": "auto", "width": "50%"},
+                style_table={"overflowX": "auto", "margin": "auto", "width": "80%"},
                 style_cell={"padding": "5px"},
             ),
             html.Div(
@@ -105,25 +93,25 @@ def _(clickData):
 
 
 @app.callback(
-    Output("hr_info", "figure"),
-    Input("plot_running", "clickData"),
+    Output("hr_info", "children"),
+    Input("plot_activities", "clickData"),
 )
 def _(clickData):
     if not clickData:
-        return px.scatter()
+        # return html.Div("Select an activity to see Heart Rate data...", style=TEXT_STYLE)
+        return
 
-    idx = clickData["points"][0]["pointIndex"]
-    hr = g.get_hr(df.iloc[idx]["activityId"])
+    hr = g.get_hr(activity_id=clickData["points"][0]["customdata"][0])
 
     if not hr:
-        return px.scatter()
+        return html.Div("No HR data available for selected activity!", style=ERR_TEXT_STYLE)
 
     # smooth
-    w = 10
+    w = 50
     hr = np.convolve(hr, np.ones(w) / w, mode="valid")
     fig = px.line(hr, title="Heart Rate")
-    fig.update_yaxes(range=[80, 210])
-    return fig
+    fig.update_yaxes(range=[50, 210])
+    return dcc.Graph(figure=fig)
 
 
 if __name__ == "__main__":

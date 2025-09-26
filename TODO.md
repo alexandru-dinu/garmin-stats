@@ -1,7 +1,9 @@
-- [ ] finest level of detail possible
+- [ ] finest level of detail possible: gpx
+- [ ] HR scatter plot
 - [ ] pace zones vs hr (across multiple runs)
 - [ ] get and cache data (make sure no repeated API calls are made)
 - [ ] marker style per activity type
 - [ ] inputs for filtering (exposing `df.query`?)
 - [ ] stats per (week, month, day)
 - [x] clicked activity to display more info
+- [ ] https://github.com/sivaprakasaman/garmin_wrapped/
