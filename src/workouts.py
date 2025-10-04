@@ -7,13 +7,13 @@ def to_pace_str(x: float) -> str:
     return f"{int(a)}:{b:02d} min/km"
 
 
-start = 6  # min/km
-end = 5  # min/km
-laps = 9
-dist = 0.6  # km
+start = 5 + 40 / 60  # min/km
+end = 5 + 20 / 60  # min/km
+laps = 37
+dist = 0.4  # km
 
 splits = np.linspace(start, end, laps)  # min/km
-total_duration = (splits * dist).sum()
+total_duration = np.round(np.sum((splits * dist)), 2)
 diff = round((splits[0] - splits[1]) * 60, 2)
 
 summary = f"""
