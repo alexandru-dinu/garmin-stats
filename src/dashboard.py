@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import plotly.express as px
-from dash import Dash, Input, Output, dash_table, dcc, html
+from dash import Dash, Input, Output, State, dash_table, dcc, html
 from loguru import logger
 
 from client import Client
@@ -15,6 +15,7 @@ logger.info(f"{df.shape=}")
 df = df[
     ["activityId", "activityType", "activityName", "startTimeLocal", "distance", "elapsedDuration"]
 ]
+df["startTimeLocal"] = pd.to_datetime(df["startTimeLocal"])
 df["activityType"] = df["activityType"].apply(lambda d: d["typeKey"])
 df["distance_km"] = (df["distance"] / 1000).round(2)
 df["duration_min"] = (df["elapsedDuration"] / 60).round(2)
@@ -25,30 +26,28 @@ TEXT_STYLE = {"font-family": "sans-serif", "font-size": "14pt"}
 ERR_TEXT_STYLE = TEXT_STYLE | {"color": "red", "font-weight": "bold"}
 
 app = Dash(__name__)
-
-
-def plot_activities():
-    fig = px.scatter(
-        df,
-        x="startTimeLocal",
-        y="duration_min",
-        color="activityType",
-        symbol="activityType",
-        custom_data=["activityId"],
-        title="Activities",
-    )
-    fig.update_traces(
-        marker={"size": 10, "line": {"width": 1, "color": "Black"}},
-        selector={"mode": "markers"},
-    )
-    return fig
-
-
-# TODO: smarter layout
 app.layout = html.Div(
     [
+        html.Div(
+            [
+                # Text input
+                dcc.Textarea(
+                    id="df_query",
+                    placeholder="Enter Pandas query...",
+                    style={
+                        "width": "50%",
+                        "height": "120px",
+                        "fontFamily": "monospace",
+                        "fontSize": "16px",
+                        "whiteSpace": "pre",
+                    },
+                ),
+                html.Button("Run query", id="run_query", n_clicks=0, style={"marginLeft": "10px"}),
+            ],
+            style={"display": "flex", "alignItems": "center"},
+        ),
         # Main activities
-        dcc.Graph(id="plot_activities", figure=plot_activities()),
+        dcc.Graph(id="plot_activities"),
         # Activity info
         html.Div(id="activity_info", style=TEXT_STYLE),
         dcc.Loading(
@@ -59,6 +58,33 @@ app.layout = html.Div(
         ),
     ]
 )
+
+
+@app.callback(
+    Output("plot_activities", "figure"),
+    Input("run_query", "n_clicks"),
+    State("df_query", "value"),
+)
+def _(n_clicks, query):
+    if not n_clicks or not query:
+        tmp = df
+    else:
+        tmp = df.query(query.replace("\n", " "))
+
+    fig = px.scatter(
+        tmp,
+        x="startTimeLocal",
+        y="duration_min",
+        color="activityType",
+        symbol="activityType",
+        custom_data=["activityId"],
+        title=f"Activities: {len(tmp):,d}",
+    )
+    fig.update_traces(
+        marker={"size": 10, "line": {"width": 1, "color": "Black"}},
+        selector={"mode": "markers"},
+    )
+    return fig
 
 
 @app.callback(

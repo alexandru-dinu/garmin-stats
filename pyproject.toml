@@ -3,17 +3,20 @@ name = "garmin-stats"
 version = "0.1.0"
 description = "Garmin Watch Statistics."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "dash>=3.2.0",
     "garth>=0.5.17",
     "gpxpy>=1.6.2",
     "ipywidgets>=8.1.7",
+    "joblib>=1.5.2",
     "jupyterlab>=4.4.7",
+    "kaleido>=1.1.0",
     "loguru>=0.7.3",
     "matplotlib>=3.10.6",
     "pandas>=2.0.0",
     "plotly>=6.3.0",
+    "rich>=14.1.0",
     "seaborn>=0.13.2",
     "tqdm>=4.67.1",
 ]
@@ -38,8 +41,8 @@ lint.select = [
     "NPY", # NumPy-specific rules
 ]
 lint.ignore = [
-    "E501",  # line too long, handled by black
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
-    "PD901", # `df` variable name
+    "E501",   # line too long, handled by black
+    "B008",   # do not perform function calls in argument defaults
+    "C901",   # too complex
+    "SIM108", # ternary
 ]

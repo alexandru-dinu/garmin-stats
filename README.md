@@ -1,1 +1,3 @@
-![Current Status](assets/v2.png)
+# Garmin Stats
+
+Dashboard for activities collected by Garmin. See the [CHANGELOG](./CHANGELOG.md) for project evolution.
