@@ -8,6 +8,7 @@ dependencies = [
     "dash>=3.2.0",
     "garth>=0.5.17",
     "gpxpy>=1.6.2",
+    "humanize>=4.14.0",
     "ipywidgets>=8.1.7",
     "joblib>=1.5.2",
     "jupyterlab>=4.4.7",
@@ -18,6 +19,7 @@ dependencies = [
     "plotly>=6.3.0",
     "rich>=14.1.0",
     "seaborn>=0.13.2",
+    "tcxreader>=0.4.11",
     "tqdm>=4.67.1",
 ]
 
@@ -45,4 +47,12 @@ lint.ignore = [
     "B008",   # do not perform function calls in argument defaults
     "C901",   # too complex
     "SIM108", # ternary
+]
+
+[dependency-groups]
+dev = [
+    "autoflake>=2.3.1",
+    "black>=25.12.0",
+    "isort>=7.0.0",
+    "jupyterlab-code-formatter>=3.0.2",
 ]
