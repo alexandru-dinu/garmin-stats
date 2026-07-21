@@ -14,4 +14,4 @@ clean:
 format:
 	@autoflake --in-place --remove-all-unused-imports $(SRC) \
 		&& isort $(SRC) \
-		&& black --line-length 100 $(SRC)
+		&& black --line-length 88 $(SRC)

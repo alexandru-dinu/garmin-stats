@@ -43,7 +43,8 @@ class Client:
         assert len(gpx.tracks) == 1
         assert len(gpx.tracks[0].segments) == 1
         return [
-            int(pt.extensions[0].find(".//{*}hr").text) for pt in gpx.tracks[0].segments[0].points
+            int(pt.extensions[0].find(".//{*}hr").text)
+            for pt in gpx.tracks[0].segments[0].points
         ]
 
     @staticmethod

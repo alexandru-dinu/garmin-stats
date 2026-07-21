@@ -13,7 +13,14 @@ df["activityId"] = df.index
 logger.info(f"{df.shape=}")
 
 df = df[
-    ["activityId", "activityType", "activityName", "startTimeLocal", "distance", "elapsedDuration"]
+    [
+        "activityId",
+        "activityType",
+        "activityName",
+        "startTimeLocal",
+        "distance",
+        "elapsedDuration",
+    ]
 ]
 df["startTimeLocal"] = pd.to_datetime(df["startTimeLocal"])
 df["activityType"] = df["activityType"].apply(lambda d: d["typeKey"])
@@ -25,6 +32,11 @@ df = df.drop(["distance", "elapsedDuration"], axis=1)
 TEXT_STYLE = {"font-family": "sans-serif", "font-size": "14pt"}
 ERR_TEXT_STYLE = TEXT_STYLE | {"color": "red", "font-weight": "bold"}
 
+TEXT_AREA_INSTRUCTIONS = f"""
+Enter Pandas query; will be sent to `df.query(...)`.
+Columns: {', '.join(df.columns)}
+""".strip()
+
 app = Dash(__name__)
 app.layout = html.Div(
     [
@@ -33,7 +45,7 @@ app.layout = html.Div(
                 # Text input
                 dcc.Textarea(
                     id="df_query",
-                    placeholder="Enter Pandas query...",
+                    placeholder=TEXT_AREA_INSTRUCTIONS,
                     style={
                         "width": "50%",
                         "height": "120px",
@@ -42,7 +54,12 @@ app.layout = html.Div(
                         "whiteSpace": "pre",
                     },
                 ),
-                html.Button("Run query", id="run_query", n_clicks=0, style={"marginLeft": "10px"}),
+                html.Button(
+                    "Run query",
+                    id="run_query",
+                    n_clicks=0,
+                    style={"marginLeft": "10px"},
+                ),
             ],
             style={"display": "flex", "alignItems": "center"},
         ),
@@ -111,7 +128,12 @@ def _(clickData):
             html.Div(
                 html.A("Open Activity (Garmin Connect)", href=link, target="_blank"),
                 style=(
-                    TEXT_STYLE | {"marginTop": "10px", "textAlign": "center", "font-weight": "bold"}
+                    TEXT_STYLE
+                    | {
+                        "marginTop": "10px",
+                        "textAlign": "center",
+                        "font-weight": "bold",
+                    }
                 ),
             ),
         ]
@@ -130,10 +152,12 @@ def _(clickData):
     hr = g.get_hr(activity_id=clickData["points"][0]["customdata"][0])
 
     if not hr:
-        return html.Div("No HR data available for selected activity!", style=ERR_TEXT_STYLE)
+        return html.Div(
+            "No HR data available for selected activity!", style=ERR_TEXT_STYLE
+        )
 
     # smooth
-    w = 50
+    w = 20
     hr = np.convolve(hr, np.ones(w) / w, mode="valid")
     fig = px.line(hr, title="Heart Rate")
     fig.update_yaxes(range=[50, 210])
